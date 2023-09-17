@@ -1,4 +1,4 @@
-import { Directory } from "./components/Directory";
+import { Directory } from "./components/directory"
 
 export default function Command() {
   return (

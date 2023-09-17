@@ -13,7 +13,7 @@
     {
       "name": "index",
       "title": "Analyze Disk Space",
-      "description": "Template for showing a static list and a detail view",
+      "description": "Analyze Disk Space",
       "mode": "view"
     }
   ],
