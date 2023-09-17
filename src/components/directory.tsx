@@ -1,40 +1,9 @@
 import { Action, ActionPanel, List } from "@raycast/api";
-import * as path from "path"
+import * as path from "path";
 import { useEffect, useState } from "react";
-import { readdir, stat } from "fs/promises"
-
-async function getSize(filePath: string): Promise<number> {
-  try {
-    const stats = await stat(filePath);
-    if (stats.isFile()) {
-      return stats.size / (1024 * 1024);
-    }
-
-    let totalSize = 0;
-
-    const files: string[] = await readdir(filePath);
-
-    for (const file of files) {
-      const fileFullPath = path.join(filePath, file);
-
-      if ((await stat(fileFullPath)).isDirectory()) {
-        totalSize += await getSize(fileFullPath);
-      } else {
-        totalSize += (await stat(fileFullPath)).size;
-      }
-    }
-
-    return totalSize / (1024 * 1024);
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
-  }
-}
-
-interface File {
-  name: string;
-  size: number;
-}
+import { readdir, stat } from "fs/promises";
+import { getSize } from "../utils";
+import { File } from "../types";
 
 export function Directory({ filePath }: { filePath: string }) {
   const [files, setFiles] = useState<File[]>([]);
@@ -45,7 +14,8 @@ export function Directory({ filePath }: { filePath: string }) {
 
     fileNames.forEach(async (fileName) => {
       const size = await getSize(path.join(filePath, fileName));
-      setFiles((prev) => [...prev, { name: fileName, size }]);
+      const isDirectory = await (await stat(path.join(filePath, fileName))).isDirectory();
+      setFiles((prev) => [...prev, { name: fileName, size, isDirectory }]);
     });
   };
 
@@ -55,16 +25,20 @@ export function Directory({ filePath }: { filePath: string }) {
 
   return (
     <List>
-      {files?.map(({ name, size }) => (
+      {files?.map((file) => (
         <List.Item
-          key={name}
-          title={name}
+          key={file.name}
+          title={file.name}
           actions={
             <ActionPanel>
-              <Action.Push title="Open" target={<Directory filePath={path.join(filePath, name)}/>} />
+              {file.isDirectory && (
+                <Action.Push title="Open" target={<Directory filePath={path.join(filePath, file.name)} />} />
+              )}
+              {/* TODO: Remove item from list when deleted */}
+              <Action.Trash paths={path.join(filePath, file.name)} />
             </ActionPanel>
           }
-          accessories={[{ text: `${size.toFixed(2)} MB` }]}
+          accessories={[{ text: `${file.size.toFixed(2)} MB` }]}
         />
       ))}
     </List>
