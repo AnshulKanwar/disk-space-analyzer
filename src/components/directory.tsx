@@ -1,4 +1,4 @@
-import { Action, ActionPanel, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import * as path from "path";
 import { useEffect, useState } from "react";
 import { readdir, stat } from "fs/promises";
@@ -29,6 +29,7 @@ export function Directory({ filePath }: { filePath: string }) {
         <List.Item
           key={file.name}
           title={file.name}
+          icon={file.isDirectory ? Icon.Folder : undefined}
           actions={
             <ActionPanel>
               {file.isDirectory && (
